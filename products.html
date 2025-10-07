@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Products | Maisoné </title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #f9fafb, #eef2f7);
+      color: #1f2937;
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      transition: margin-left 0.3s ease;
+    }
+    #sidebar { transition: all 0.3s ease; }
+    #sidebar.closed { width: 70px; }
+    #sidebar.closed .label { display: none; }
+    .modal-enter { opacity: 0; transform: translateY(-20px); transition: all 0.25s ease; }
+    .modal-show { opacity: 1; transform: translateY(0); }
+    .slide { display: none; transition: opacity 0.8s ease-in-out; }
+    .slide.active { display: block; }
+  </style>
+</head>
+<body class="flex">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="bg-white w-56 h-screen shadow-lg flex flex-col fixed left-0 top-0 p-4 z-50">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-bold text-blue-700">🛒</h2>
+      <button id="toggleSidebar" class="p-2 hover:bg-gray-200 rounded">
+        <i data-lucide="chevron-left"></i>
+      </button>
+    </div>
+    <nav class="flex flex-col gap-4">
+      <button class="flex items-center gap-3 hover:bg-blue-100 p-2 rounded" onclick="window.location.href='home.html'">
+        <i data-lucide="home"></i><span class="label">home</span>
+      </button>
+      <button class="flex items-center gap-3 hover:bg-blue-100 p-2 rounded" onclick="window.location.href='cart.html'">
+        <i data-lucide="shopping-cart"></i><span class="label">Keranjang</span>
+      </button>
+      <button class="flex items-center gap-3 hover:bg-blue-100 p-2 rounded"onclick="window.location.href='profil.html'">
+        <i data-lucide="user"></i><span class="label">Profil</span>
+      </button>
+
+      <!-- Tambah Produk: tersedia untuk publik -->
+      <button id="sidebar-add-btn" class="flex items-center gap-3 hover:bg-green-100 p-2 rounded mt-4 text-green-700">
+        <i data-lucide="plus-circle"></i><span class="label font-medium">Tambah Produk</span>
+      </button>
+
+      <!-- Tombol Kembali -->
+      <button id="back-btn" class="flex items-center gap-3 hover:bg-gray-200 p-2 rounded mt-4">
+        <i data-lucide="arrow-left-circle" class="text-gray-600"></i>
+        <span class="label text-gray-700 font-medium">Kembali</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6 ml-56 transition-all" id="mainContent">
+    <header class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-gray-800 tracking-wide">Maisoné Store</h1>
+      <div class="flex items-center gap-4">
+        <span id="user-email" class="text-sm text-gray-600"></span>
+        <button id="logout-btn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-white font-medium">Logout</button> 
+      </div>
+    </header>
+
+
+    <div class="mb-6 flex justify-center">
+      <input id="search" type="text" placeholder="Cari produk..."
+        class="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 p-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none text-center transition-transform duration-200 focus:scale-105 focus:shadow-lg">
+    </div>
+
+    <!-- Carousel -->
+    <section class="relative w-full max-w-4xl mx-auto mb-8 overflow-hidden rounded-lg shadow-lg">
+      <div class="slide active"><img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f" class="w-full h-60 object-cover"></div>
+      <div class="slide"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" class="w-full h-60 object-cover"></div>
+      <div class="slide"><img src="https://images.unsplash.com/photo-1503602642458-232111445657" class="w-full h-60 object-cover"></div>
+    </section>
+
+    <section class="mb-4 flex justify-between items-center">
+      <h2 class="text-xl font-semibold text-gray-800">Daftar Produk</h2>
+    </section>
+
+    <div id="products" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+
+    <!-- Modal Tambah Produk -->
+    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-40">
+      <div id="modal-content" class="modal-enter bg-white rounded-xl p-6 w-80 shadow-2xl border border-gray-200">
+        <h3 class="text-lg font-semibold mb-4 text-gray-700">Tambah Produk</h3>
+
+        <label class="text-sm text-gray-600">Nama</label>
+        <input id="name" type="text" placeholder="Nama Produk" class="w-full mb-3 p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none">
+
+        <label class="text-sm text-gray-600">Harga (angka)</label>
+        <input id="price" type="number" placeholder="Harga" class="w-full mb-3 p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none">
+
+        <label class="text-sm text-gray-600">Gambar (upload dari komputer)</label>
+        <input id="file-input" type="file" accept="image/*" class="w-full mb-3">
+
+        <label class="text-sm text-gray-600">Deskripsi</label>
+        <textarea id="description" placeholder="Deskripsi" class="w-full mb-3 p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"></textarea>
+
+        <div class="flex justify-end gap-3">
+          <button id="cancel-btn" class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
+          <button id="save-btn" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+
+    // === GANTI hanya jika perlu (sudah berdasarkan input dari kamu) ===
+    const supabaseUrl = "https://eoqrwgerdtsbnbosfvua.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcXJ3Z2VyZHRzYm5ib3NmdnVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3MTEyNTEsImV4cCI6MjA3NTI4NzI1MX0.VAXf_yr2-Hopjal7FqjL0ps09pLQjvSw64GHzkPLIxo";
+    // ==================================================================
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const BUCKET = "product-images"; // pastikan bucket ini ada dan public
+
+    // Elemen
+    const sidebarAddBtn = document.getElementById("sidebar-add-btn");
+    const backBtn = document.getElementById("back-btn");
+    const productsDiv = document.getElementById("products");
+    const modal = document.getElementById("modal");
+    const modalContent = document.getElementById("modal-content");
+    const saveBtn = document.getElementById("save-btn");
+    const cancelBtn = document.getElementById("cancel-btn");
+    const fileInput = document.getElementById("file-input");
+
+    // Sidebar toggle
+    const sidebar = document.getElementById("sidebar");
+    const toggleSidebar = document.getElementById("toggleSidebar");
+    const mainContent = document.getElementById("mainContent");
+    toggleSidebar.addEventListener("click", () => {
+      sidebar.classList.toggle("closed");
+      mainContent.classList.toggle("ml-56");
+      mainContent.classList.toggle("ml-20");
+      const icon = toggleSidebar.querySelector("i");
+      icon.setAttribute("data-lucide", sidebar.classList.contains("closed") ? "chevron-right" : "chevron-left");
+      lucide.createIcons();
+    });
+
+    // Tombol kembali
+    backBtn.addEventListener("click", () => window.history.back());
+
+    // Buka modal (publik — semua pengguna)
+    sidebarAddBtn.addEventListener("click", () => {
+      modal.classList.remove("hidden");
+      setTimeout(() => modalContent.classList.add("modal-show"), 10);
+    });
+    cancelBtn.addEventListener("click", () => {
+      modalContent.classList.remove("modal-show");
+      setTimeout(() => modal.classList.add("hidden"), 250);
+      clearModalFields();
+    });
+
+    // Load products (tampilkan daftar)
+    async function loadProducts() {
+      productsDiv.innerHTML = `<p class="text-gray-500">Memuat produk...</p>`;
+      const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false });
+      if (error) {
+        productsDiv.innerHTML = `<p class='text-red-500'>Gagal memuat produk: ${error.message}</p>`;
+        return;
+      }
+      if (!data || data.length === 0) {
+        productsDiv.innerHTML = `<p class='text-gray-500'>Belum ada produk.</p>`;
+        return;
+      }
+
+      productsDiv.innerHTML = data.map(p => {
+        const img = p.image_url || "https://via.placeholder.com/400x300?text=No+Image";
+        return `
+          <div class="bg-white rounded-lg shadow hover:shadow-xl transition overflow-hidden border border-gray-100">
+            <img src="${img}" class="w-full h-40 object-cover">
+            <div class="p-4">
+              <h3 class="text-lg font-semibold mb-1 text-gray-800">${escapeHtml(p.name)}</h3>
+              <p class="text-sm text-gray-500 mb-2">Rp ${formatNumber(p.price)}</p>
+              <p class="text-sm text-gray-500 mb-3">${escapeHtml(p.description || "")}</p>
+              <div class="flex gap-3 justify-center">
+                <button onclick="addToCart(${p.id}, '${escapeJs(p.name)}', ${p.price}, '${p.image_url || ''}')" title="Tambah ke keranjang"><i data-lucide='shopping-cart' class='text-green-500 hover:text-green-700'></i></button>
+                <button onclick="buyProduct(${p.id})" title="Beli"><i data-lucide='credit-card' class='text-yellow-500 hover:text-yellow-700'></i></button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+      lucide.createIcons();
+    }
+
+    function formatNumber(n) {
+      if (n === null || n === undefined) return "0";
+      try { return Number(n).toLocaleString('id-ID'); } catch { return n; }
+    }
+    function escapeHtml(s) { if(!s) return ""; return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+    function escapeJs(s) { if(!s) return ""; return String(s).replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "\\r"); }
+
+    // Simpan produk (upload gambar ke storage lalu insert ke tabel products)
+    saveBtn.addEventListener("click", async () => {
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Menyimpan...";
+      try {
+        const name = document.getElementById("name").value.trim();
+        const priceRaw = document.getElementById("price").value;
+        const description = document.getElementById("description").value.trim();
+        const file = fileInput.files[0];
+
+        if (!name) { alert("Nama produk wajib diisi"); saveBtn.disabled = false; saveBtn.textContent = "Simpan"; return; }
+        if (!priceRaw) { alert("Harga wajib diisi"); saveBtn.disabled = false; saveBtn.textContent = "Simpan"; return; }
+        const price = Number(priceRaw);
+        if (Number.isNaN(price) || price < 0) { alert("Harga tidak valid"); saveBtn.disabled = false; saveBtn.textContent = "Simpan"; return; }
+
+        let imageUrl = null;
+
+        if (file) {
+          // buat nama file unik
+          const ext = file.name.split('.').pop();
+          const fileName = `product_${Date.now()}.${ext}`;
+          // upload ke bucket PRODUCT-IMAGES (pastikan bucket sudah ada & public)
+          const { error: upErr } = await supabase.storage.from(BUCKET).upload(fileName, file, { cacheControl: '3600', upsert: false });
+          if (upErr) {
+            console.warn("Upload image gagal:", upErr.message);
+            // lanjutkan menyimpan produk tanpa gambar
+          } else {
+            const { data: publicData } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
+            imageUrl = publicData?.publicUrl || null;
+          }
+        }
+
+        // insert product ke tabel products
+        const { error } = await supabase.from('products').insert({
+          name,
+          price,
+          image_url: imageUrl,
+          description,
+          created_at: new Date().toISOString()
+        });
+
+        if (error) {
+          alert("Gagal menyimpan produk: " + error.message);
+        } else {
+          modalContent.classList.remove("modal-show");
+          setTimeout(() => modal.classList.add("hidden"), 250);
+          clearModalFields();
+          loadProducts();
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan saat menyimpan produk.");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Simpan";
+      }
+    });
+
+    function clearModalFields() {
+      document.getElementById("name").value = "";
+      document.getElementById("price").value = "";
+      document.getElementById("description").value = "";
+      fileInput.value = "";
+    }
+
+    // Keranjang + buy (pakai implementasimu sebelumnya)
+    window.addToCart = async (productId, name, price, imageUrl) => {
+      try {
+        // jika ingin publik tanpa login, hapus pengecekan auth di sini
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!currentUser) {
+          // fallback: jangan abort — simpan keranjang di localStorage jika belum login
+          let cart = JSON.parse(localStorage.getItem('cart_public') || '[]');
+          // tambahkan item
+          cart.push({ product_id: productId, product_name: name, product_price: price, product_image: imageUrl, quantity: 1 });
+          localStorage.setItem('cart_public', JSON.stringify(cart));
+          alert("Produk ditambahkan ke keranjang (disimpan lokal).");
+          return;
+        }
+        const { error } = await supabase.from('cart').insert([{
+          user_id: currentUser.id,
+          product_id: productId,
+          product_name: name,
+          product_price: price,
+          product_image: imageUrl,
+          quantity: 1
+        }]);
+        if (error) alert("Gagal menambah ke keranjang: " + error.message);
+        else alert("Produk ditambahkan ke keranjang!");
+      } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan saat menambah ke keranjang.");
+      }
+    };
+
+    window.buyProduct = id => alert("🛍️ Pembelian produk berhasil!");
+
+    // Carousel
+    let index = 0;
+    const slides = document.querySelectorAll(".slide");
+    setInterval(() => {
+      slides[index].classList.remove("active");
+      index = (index + 1) % slides.length;
+      slides[index].classList.add("active");
+    }, 4000);
+
+    // load awal
+    await loadProducts();
+    lucide.createIcons();
+
+
+</script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+
+  // pakai nama unik agar tidak konflik
+  const sbUrl = 'https://eoqrwgerdtsbnbosfvua.supabase.co'
+  const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcXJ3Z2VyZHRzYm5ib3NmdnVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3MTEyNTEsImV4cCI6MjA3NTI4NzI1MX0.VAXf_yr2-Hopjal7FqjL0ps09pLQjvSw64GHzkPLIxo'
+  const sbLogout = createClient(sbUrl, sbKey)
+
+  const logoutBtn = document.getElementById('logout-btn')
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      const { error } = await sbLogout.auth.signOut()
+      if (error) {
+        alert('❌ Gagal logout: ' + error.message)
+      } else {
+        alert('✅ Berhasil logout!')
+        window.location.href = 'index.html'
+      }
+    })
+  }
+</script>
+
+
+</body>
+</html>
+

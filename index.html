@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maisoné Collective | Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+    body {
+      background: url('a.jpg') center/cover no-repeat fixed;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(8px);
+    }
+
+    .container {
+      width: 380px;
+      background: rgba(255, 255, 255, 0);
+      backdrop-filter: blur(25px);
+      border-radius: 25px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      padding: 40px 30px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      color: #333;
+      animation: fadeIn 1s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .logo img {
+      width: 90px; height: auto; margin-bottom: 10px;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2));
+    }
+
+    .logo h2 {
+      font-weight: 700; letter-spacing: 1px; font-size: 1.6rem;
+    }
+
+    input {
+      width: 100%; padding: 12px; margin: 8px 0;
+      border: none; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+      box-shadow: inset 0 0 0 1px rgba(180,180,180,0.4);
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      box-shadow: inset 0 0 0 2px #62c1c4, 0 0 5px rgba(196, 169, 98, 0.3);
+      outline: none;
+    }
+
+    button {
+      width: 100%; padding: 12px;
+      background: linear-gradient(135deg, #88cdeb, #012f4b);
+      border: none; border-radius: 12px;
+      color: #fff; font-weight: 700; font-size: 15px;
+      cursor: pointer; margin-top: 8px;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #b89d5c, #f6d982);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(196, 169, 98, 0.3);
+    }
+
+    .link {
+      margin-top: 14px; font-size: 13px;
+      color: #100736; text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .link:hover { color: #b89d5c; }
+
+    #register-form {
+      position: absolute; top: 0; left: 0; width: 100%;
+      opacity: 0; transform: translateY(20px);
+      pointer-events: none; transition: all 0.4s ease;
+    }
+
+    #register-form.active {
+      opacity: 1; transform: translateY(0);
+      pointer-events: all;
+    }
+
+    #login-form.fade {
+      opacity: 0; transform: translateY(-20px);
+      pointer-events: none;
+    }
+
+    #message {
+      text-align: center; font-weight: 600;
+      margin-top: 15px; color: #01060b;
+    }
+
+    footer {
+      text-align: center; font-size: 12px;
+      color: #2c1414; margin-top: 20px;
+    }
+
+    /* Loading overlay */
+    .loading {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      backdrop-filter: blur(6px);
+      background: rgba(255,255,255,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999; opacity: 0; pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    .loading.active { opacity: 1; pointer-events: all; }
+
+    .spinner {
+      width: 70px; height: 70px; border-radius: 50%;
+      border: 5px solid rgba(196,169,98,0.2);
+      border-top: 5px solid #c4a962;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="M.png" alt="Maisoné Logo">
+      <h2>Maisoné Collective</h2>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login-form">
+      <h3>Masuk ke Akun Anda</h3>
+      <input type="email" id="login-email" placeholder="Alamat Email">
+      <input type="password" id="login-password" placeholder="Kata Sandi">
+      <button id="login-btn">Masuk</button>
+      <div class="link" id="show-register">Belum punya akun? Daftar sekarang</div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="register-form">
+      <h3>Buat Akun Baru</h3>
+      <input type="email" id="reg-email" placeholder="Alamat Email">
+      <input type="password" id="reg-password" placeholder="Kata Sandi">
+      <button id="reg-btn" style="background:linear-gradient(135deg,#8ecf81,#63ad5b);">Daftar</button>
+      <div class="link" id="show-login">Sudah punya akun? Login di sini</div>
+    </div>
+
+    <p id="message"></p>
+    <footer>© 2025 Maisoné Digital Commerce</footer>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+
+    const supabaseUrl = 'https://eoqrwgerdtsbnbosfvua.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcXJ3Z2VyZHRzYm5ib3NmdnVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3MTEyNTEsImV4cCI6MjA3NTI4NzI1MX0.VAXf_yr2-Hopjal7FqjL0ps09pLQjvSw64GHzkPLIxo';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const msg = document.getElementById('message');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const loading = document.getElementById('loading');
+
+    document.getElementById('show-register').onclick = () => {
+      loginForm.classList.add('fade');
+      setTimeout(() => registerForm.classList.add('active'), 300);
+      msg.innerText = '';
+    };
+
+    document.getElementById('show-login').onclick = () => {
+      registerForm.classList.remove('active');
+      setTimeout(() => loginForm.classList.remove('fade'), 300);
+      msg.innerText = '';
+    };
+
+    document.getElementById('reg-btn').addEventListener('click', async () => {
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value.trim();
+      if (!email || !password) return msg.innerText = '⚠️ Harap isi email dan password.';
+      showLoading();
+      const { error } = await supabase.auth.signUp({ email, password });
+      hideLoading();
+      msg.innerText = error ? `❌ ${error.message}` : '✅ Akun berhasil dibuat! Silakan login.';
+    });
+
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+      if (!email || !password) return msg.innerText = '⚠️ Harap isi email dan password.';
+      showLoading();
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      hideLoading();
+      if (error) msg.innerText = `❌ ${error.message}`;
+      else {
+        msg.innerText = '✅ Login berhasil!';
+        setTimeout(() => window.location.href = 'products.html', 1200);
+      }
+    });
+
+    function showLoading() { loading.classList.add('active'); }
+    function hideLoading() { loading.classList.remove('active'); }
+  </script>
+</body>
+</html>
