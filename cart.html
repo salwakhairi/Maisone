@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keranjang Belanja</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+  <div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">🛒 Keranjang Belanja</h1>
+
+    <!-- List Item Keranjang -->
+    <div id="cartItems" class="space-y-4 bg-white p-4 rounded-lg shadow"></div>
+
+    <!-- Total -->
+    <div class="flex justify-between items-center mt-6 bg-white p-4 rounded-lg shadow">
+      <h2 class="text-lg font-semibold text-gray-700">Total:</h2>
+      <p id="totalPrice" class="text-xl font-bold text-blue-600">Rp 0</p>
+    </div>
+
+    <!-- Pilihan Pembayaran -->
+    <div class="mt-6 bg-white p-4 rounded-lg shadow">
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">Metode Pembayaran</h2>
+      <select id="paymentMethod" class="w-full border rounded-md p-2">
+        <option value="">-- Pilih Metode Pembayaran --</option>
+        <option value="COD">COD (Bayar di Tempat)</option>
+        <option value="Dana">Dana</option>
+        <option value="OVO">OVO</option>
+        <option value="Transfer Bank">Transfer Bank</option>
+      </select>
+    </div>
+
+    <!-- Tombol -->
+    <div class="mt-6 flex justify-end gap-4">
+      <button id="checkoutBtn" class="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md">Checkout</button>
+      <button onclick="window.location.href='products.html'" class="bg-gray-400 hover:bg-gray-500 text-white px-5 py-2 rounded-md">Kembali</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+    const supabaseUrl = 'https://eoqrwgerdtsbnbosfvua.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcXJ3Z2VyZHRzYm5ib3NmdnVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3MTEyNTEsImV4cCI6MjA3NTI4NzI1MX0.VAXf_yr2-Hopjal7FqjL0ps09pLQjvSw64GHzkPLIxo'
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) window.location.href = 'index.html'
+
+    const cartDiv = document.getElementById('cartItems')
+    const totalPriceEl = document.getElementById('totalPrice')
+    const paymentSelect = document.getElementById('paymentMethod')
+
+    async function loadCart() {
+      const { data, error } = await supabase
+        .from('cart')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (error) {
+        cartDiv.innerHTML = `<p class='text-red-500'>Gagal memuat keranjang: ${error.message}</p>`
+        return
+      }
+
+      if (data.length === 0) {
+        cartDiv.innerHTML = `<p class='text-gray-500 text-center'>Keranjangmu masih kosong 😢</p>`
+        totalPriceEl.textContent = "Rp 0"
+        return
+      }
+
+      let total = 0
+      cartDiv.innerHTML = data.map(item => {
+        total += item.product_price * (item.quantity || 1)
+        return `
+          <div class="flex items-center justify-between border-b pb-3">
+            <div class="flex items-center gap-4">
+              <img src="${item.product_image}" class="w-16 h-16 object-cover rounded">
+              <div>
+                <h3 class="font-semibold text-gray-800">${item.product_name}</h3>
+                <p class="text-sm text-gray-500">Rp${item.product_price} × ${item.quantity || 1}</p>
+              </div>
+            </div>
+            <button class="text-red-500 hover:text-red-700" onclick="removeFromCart(${item.id})">Hapus</button>
+          </div>
+        `
+      }).join('')
+
+      totalPriceEl.textContent = "Rp " + total.toLocaleString("id-ID")
+    }
+
+    window.removeFromCart = async (id) => {
+      const { error } = await supabase.from('cart').delete().eq('id', id)
+      if (error) alert('Gagal menghapus item: ' + error.message)
+      else loadCart()
+    }
+
+    document.getElementById('checkoutBtn').addEventListener('click', async () => {
+      const paymentMethod = paymentSelect.value
+      if (!paymentMethod) {
+        alert('⚠️ Silakan pilih metode pembayaran terlebih dahulu.')
+        return
+      }
+
+      alert(`✅ Pembayaran Berhasil!\nMetode: ${paymentMethod}\nTerima kasih telah berbelanja 💖`)
+      await supabase.from('cart').delete().eq('user_id', user.id)
+      loadCart()
+    })
+
+    loadCart()
+  </script>
+</body>
+</html>
